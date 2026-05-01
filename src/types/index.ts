@@ -1,8 +1,17 @@
 export interface AuthUser {
-  id: number
-  name: string
+  idUtente: number
+  username: string
   email: string
-  avatar_url?: string | null
+  tipoUtente: number
+  tipoUtenteLabel: string
+  nome: string
+  cognome: string
+  cellulare: string | null
+  data_nascita: string | null
+  sesso: string | null
+  avatar_url: string | null
+  created_at: string
+  updated_at: string
 }
 
 export type MessageRole = 'user' | 'assistant'
@@ -28,8 +37,12 @@ export interface LoginCredentials {
 }
 
 export interface LoginResponse {
-  token: string
-  user: AuthUser
+  status: string
+  message: string
+  data: {
+    access_token: string
+    user: AuthUser
+  }
 }
 
 export interface ApiError {

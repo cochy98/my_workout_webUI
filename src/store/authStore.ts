@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import { toast } from 'sonner'
-import type { AuthUser, LoginCredentials } from '@/types'
+import type { AuthUser, LoginCredentials, LoginResponse } from '@/types'
 
 interface AuthState {
   user: AuthUser | null
@@ -34,11 +34,8 @@ export const useAuthStore = create<AuthStore>()(
         const { laravelApi } = await import('@/lib/axios')
         set({ isAuthenticating: true })
         try {
-          const { data } = await laravelApi.post<{ token: string; user: AuthUser }>(
-            '/login',
-            credentials
-          )
-          set({ token: data.token, user: data.user, isAuthenticated: true })
+          const { data } = await laravelApi.post<LoginResponse>('/login', credentials)
+          set({ token: data.data.access_token, user: data.data.user, isAuthenticated: true })
         } catch {
           toast.error('Invalid email or password.')
           throw new Error('Login failed')
@@ -59,16 +56,21 @@ export const useAuthStore = create<AuthStore>()(
       },
 
       checkAuth: async () => {
-        const { token } = get()
+        const { token, user } = get()
         if (!token) {
           set({ isAuthenticated: false })
           return
         }
+        if (user) {
+          set({ isAuthenticated: true })
+          return
+        }
+        // Fallback: token exists but user missing (old localStorage state)
         set({ isAuthenticating: true })
         try {
           const { laravelApi } = await import('@/lib/axios')
-          const { data } = await laravelApi.get<AuthUser>('/me')
-          set({ user: data, isAuthenticated: true })
+          const { data } = await laravelApi.get<{ data: AuthUser }>('/me')
+          set({ user: data.data, isAuthenticated: true })
         } catch {
           set({ user: null, token: null, isAuthenticated: false })
         } finally {
@@ -79,7 +81,7 @@ export const useAuthStore = create<AuthStore>()(
     {
       name: 'auth-storage',
       storage: createJSONStorage(() => localStorage),
-      partialize: (state) => ({ token: state.token }),
+      partialize: (state) => ({ token: state.token, user: state.user }),
       onRehydrateStorage: () => (state) => {
         if (state?.token) {
           state.isAuthenticated = true

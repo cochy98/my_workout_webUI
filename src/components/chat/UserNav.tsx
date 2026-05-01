@@ -29,13 +29,13 @@ export function UserNav() {
       <DropdownMenuTrigger asChild>
         <button className="flex w-full items-center gap-2.5 rounded-md px-2 py-2 hover:bg-muted transition-colors">
           <Avatar className="h-8 w-8 shrink-0">
-            <AvatarImage src={user.avatar_url ?? undefined} alt={user.name} />
+            <AvatarImage src={user.avatar_url ?? undefined} alt={`${user.nome} ${user.cognome}`} />
             <AvatarFallback className="text-xs bg-primary/10 text-primary">
-              {getInitials(user.name)}
+              {getInitials(`${user.nome} ${user.cognome}`)}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0 text-left">
-            <p className="text-sm font-medium leading-tight truncate">{user.name}</p>
+            <p className="text-sm font-medium leading-tight truncate">{user.nome} {user.cognome}</p>
             <p className="text-xs text-muted-foreground truncate">{user.email}</p>
           </div>
         </button>
